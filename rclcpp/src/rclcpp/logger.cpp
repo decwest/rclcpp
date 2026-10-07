@@ -28,11 +28,23 @@
 namespace rclcpp
 {
 
+static void
+register_logger(const char * name)
+{
+  rcutils_ret_t ret = rcutils_logging_register_logger(name);
+  if (ret != RCUTILS_RET_OK) {
+    exceptions::throw_from_rcl_error(
+      ret, "failed to register logger name", rcutils_get_error_state(), rcutils_reset_error);
+  }
+}
+
 Logger
 get_logger(const std::string & name)
 {
 #if RCLCPP_LOGGING_ENABLED
-  return rclcpp::Logger(name);
+  auto logger = rclcpp::Logger(name);
+  register_logger(logger.get_name());
+  return logger;
 #else
   (void)name;
   return rclcpp::Logger();
@@ -60,6 +72,10 @@ Logger::get_child(const std::string & suffix)
     return Logger();
   }
 
+  Logger logger(*name_ + RCUTILS_LOGGING_SEPARATOR_STRING + suffix);
+  register_logger(logger.get_name());
+  // Allocate before adding the rosout entry so allocation failure cannot leave it behind.
+  auto pairname = std::make_unique<std::pair<std::string, std::string>>(*name_, suffix);
   rcl_ret_t rcl_ret = RCL_RET_OK;
   std::shared_ptr<std::recursive_mutex> logging_mutex;
   logging_mutex = get_global_logging_mutex();
@@ -75,10 +91,9 @@ Logger::get_child(const std::string & suffix)
     }
   }
 
-  Logger logger(*name_ + RCUTILS_LOGGING_SEPARATOR_STRING + suffix);
   if (RCL_RET_OK == rcl_ret) {
     logger.logger_sublogger_pairname_.reset(
-      new std::pair<std::string, std::string>({*name_, suffix}),
+      pairname.release(),
       [logging_mutex](std::pair<std::string, std::string> * logger_sublogger_pairname_ptr) {
         std::lock_guard<std::recursive_mutex> guard(*logging_mutex);
         rcl_ret_t rcl_ret = rcl_logging_rosout_remove_sublogger(

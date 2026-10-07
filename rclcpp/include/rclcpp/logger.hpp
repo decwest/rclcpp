@@ -55,10 +55,14 @@ class Logger;
  * name prefix.
  * Currently there are no such naming conventions but they may be introduced in
  * the future.
+ * Nonempty names are registered for enumeration by rcutils and retained until
+ * rcutils_logging_shutdown(), even after the returned logger is destroyed.
  *
  * \param[in] name the name of the logger
  * \return a logger with the fully-qualified name including naming conventions, or
  * \return a dummy logger if logging is disabled.
+ * \throws rclcpp::exceptions::RCLBadAlloc if registration allocation fails.
+ * \throws rclcpp::exceptions::RCLError for other registration failures.
  */
 RCLCPP_PUBLIC
 Logger
@@ -135,11 +139,14 @@ public:
    * indicate it is a descendant of this logger.
    * For example, ```get_logger('abc').get_child('def')``` will return a logger
    * with name `abc.def`.
+   * The resulting name is registered in rcutils independently of rosout support.
    *
    * \param[in] suffix the child logger's suffix
    * \return a logger with the fully-qualified name including the suffix, or
    * \return a dummy logger if this logger is invalid (e.g. because logging is
    *   disabled).
+   * \throws rclcpp::exceptions::RCLBadAlloc if registration allocation fails.
+   * \throws rclcpp::exceptions::RCLError for other registration failures.
    */
   RCLCPP_PUBLIC
   Logger

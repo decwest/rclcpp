@@ -409,6 +409,9 @@ endif()
 ament_add_ros_isolated_gtest(test_logger test_logger.cpp)
 target_link_libraries(test_logger ${PROJECT_NAME} rcutils::rcutils)
 
+ament_add_ros_isolated_gtest(test_logger_registry test_logger_registry.cpp)
+target_link_libraries(test_logger_registry ${PROJECT_NAME} rcutils::rcutils)
+
 ament_add_ros_isolated_gmock(test_logging test_logging.cpp)
 target_link_libraries(test_logging ${PROJECT_NAME} rcutils::rcutils)
 
