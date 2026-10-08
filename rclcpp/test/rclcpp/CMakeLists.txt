@@ -460,6 +460,11 @@ if(TARGET test_logger_service)
   target_link_libraries(test_logger_service ${PROJECT_NAME} rcl_interfaces::rcl_interfaces)
 endif()
 
+ament_add_ros_isolated_gtest(test_logger_service_list test_logger_service_list.cpp)
+if(TARGET test_logger_service_list)
+  target_link_libraries(test_logger_service_list ${PROJECT_NAME} rcl_interfaces::rcl_interfaces)
+endif()
+
 ament_add_ros_isolated_gtest(test_interface_traits test_interface_traits.cpp
   APPEND_LIBRARY_DIRS "${append_library_dirs}")
 if(TARGET test_interface_traits)

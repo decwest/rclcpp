@@ -24,6 +24,7 @@
 #include "rclcpp/visibility_control.hpp"
 
 #include "rcl_interfaces/srv/get_logger_levels.hpp"
+#include "rcl_interfaces/srv/list_loggers.hpp"
 #include "rcl_interfaces/srv/set_logger_levels.hpp"
 
 namespace rclcpp
@@ -66,6 +67,7 @@ private:
   rclcpp::Logger logger_;
 
   rclcpp::Service<rcl_interfaces::srv::GetLoggerLevels>::SharedPtr get_loggers_service_;
+  rclcpp::Service<rcl_interfaces::srv::ListLoggers>::SharedPtr list_loggers_service_;
   rclcpp::Service<rcl_interfaces::srv::SetLoggerLevels>::SharedPtr set_loggers_service_;
 };
 
