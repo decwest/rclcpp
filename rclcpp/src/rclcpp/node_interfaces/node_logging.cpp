@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+
+#include "rclcpp/exceptions.hpp"
 #include "rclcpp/node_impl.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
 #include "rclcpp/node_interfaces/node_services_interface.hpp"
+#include "rcpputils/scope_exit.hpp"
+#include "rcutils/logging.h"
 
 using rclcpp::node_interfaces::NodeLogging;
 
@@ -46,6 +51,33 @@ void NodeLogging::create_logger_services(
   rclcpp::ServicesQoS qos_profile;
   const std::string node_name = node_base_->get_name();
   auto callback_group = node_base_->get_default_callback_group();
+
+  list_loggers_service_ = rclcpp::create_service<rcl_interfaces::srv::ListLoggers>(
+    node_base_, node_services,
+    node_name + "/list_loggers",
+    [base_logger_name = std::string(get_logger_name())](
+      const std::shared_ptr<rmw_request_id_t> &,
+      const std::shared_ptr<rcl_interfaces::srv::ListLoggers::Request> &,
+      std::shared_ptr<rcl_interfaces::srv::ListLoggers::Response> response)
+    {
+      auto names = rcutils_get_zero_initialized_string_array();
+      auto ret = rcutils_logging_get_logger_names(
+        base_logger_name.c_str(), rcutils_get_default_allocator(), &names);
+      if (ret != RCUTILS_RET_OK) {
+        rclcpp::exceptions::throw_from_rcl_error(
+          ret, "failed to list logger names", rcutils_get_error_state(), rcutils_reset_error);
+      }
+      RCPPUTILS_SCOPE_EXIT(
+    {
+      auto fini_ret = rcutils_string_array_fini(&names);
+      (void)fini_ret;
+      });
+      response->names.reserve(names.size);
+      for (size_t i = 0; i < names.size; ++i) {
+        response->names.emplace_back(names.data[i]);
+      }
+    },
+    qos_profile, callback_group);
 
   get_loggers_service_ = rclcpp::create_service<rcl_interfaces::srv::GetLoggerLevels>(
     node_base_, node_services,

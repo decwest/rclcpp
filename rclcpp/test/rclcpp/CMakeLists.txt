@@ -409,6 +409,9 @@ endif()
 ament_add_ros_isolated_gtest(test_logger test_logger.cpp)
 target_link_libraries(test_logger ${PROJECT_NAME} rcutils::rcutils)
 
+ament_add_ros_isolated_gtest(test_logger_registry test_logger_registry.cpp)
+target_link_libraries(test_logger_registry ${PROJECT_NAME} rcutils::rcutils)
+
 ament_add_ros_isolated_gmock(test_logging test_logging.cpp)
 target_link_libraries(test_logging ${PROJECT_NAME} rcutils::rcutils)
 
@@ -455,6 +458,11 @@ endif()
 ament_add_ros_isolated_gtest(test_logger_service test_logger_service.cpp)
 if(TARGET test_logger_service)
   target_link_libraries(test_logger_service ${PROJECT_NAME} rcl_interfaces::rcl_interfaces)
+endif()
+
+ament_add_ros_isolated_gtest(test_logger_service_list test_logger_service_list.cpp)
+if(TARGET test_logger_service_list)
+  target_link_libraries(test_logger_service_list ${PROJECT_NAME} rcl_interfaces::rcl_interfaces)
 endif()
 
 ament_add_ros_isolated_gtest(test_interface_traits test_interface_traits.cpp
